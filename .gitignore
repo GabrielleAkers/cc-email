@@ -1,0 +1,5 @@
+**/rom/autorun/*
+**/rom/help/*
+**/rom/modules/*
+**/rom/programs/*
+rawterm.lua
