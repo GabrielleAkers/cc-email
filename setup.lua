@@ -20,14 +20,17 @@ file.close()
 fs.delete(shell.resolve("./manifest"))
 local files = textutils.unserialise(manifest)
 
-local dir = shell.resolve("./email")
-if not fs.isDir(dir) then
-    fs.makeDir(dir)
+local auth_dir = shell.resolve("./email")
+if not fs.isDir(auth_dir) then
+    fs.makeDir(auth_dir)
 end
-shell.setDir(dir)
-for k, f in pairs(files) do
-    if fs.exists(shell.resolve("./" .. k .. ".lua")) then
-        fs.delete(shell.resolve("./" .. k .. ".lua"))
+shell.setDir(auth_dir)
+local files_in_dir = fs.list(shell.resolve("."))
+for _, v in pairs(files_in_dir) do
+    if string.find(v, ".lua") then
+        fs.delete(shell.resolve("./" .. v))
     end
+end
+for k, f in pairs(files) do
     shell.run("wget", f)
 end
