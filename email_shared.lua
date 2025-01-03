@@ -6,7 +6,7 @@ local version_file = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/
 local update_check = function(is_client)
     print("checking for updates")
     local version = http.get(version_file).readLine()
-    local check_file = shell.resolve("./version")
+    local check_file = shell.resolve("/email/version")
     local need_update = false
     if not fs.exists(check_file) then
         need_update = true
