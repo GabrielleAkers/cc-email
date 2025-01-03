@@ -1,6 +1,6 @@
 {
-  utils = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/utils.lua",
-  client = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/client.lua",
-  shared = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/shared.lua",
-  ui = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/ui.lua",
+  utils = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/email_utils.lua",
+  client = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/email_client.lua",
+  shared = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/email_shared.lua",
+  ui = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/email_ui.lua",
 }
