@@ -113,7 +113,8 @@ local events = {
     delete_email = "delete|",
     mark_email_read = "read|",
     mark_email_unread = "unread|",
-    new_email = "newemail|"
+    new_email = "newemail|",
+    stale_session = "stale_session|"
 }
 
 local events_valuemapped = {}

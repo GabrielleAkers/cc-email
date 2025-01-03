@@ -1,5 +1,6 @@
 local shared = require("email_shared")
 local events = shared.events
+local auth = shared.auth
 
 shared.update_check(false)
 
@@ -62,16 +63,17 @@ local handle_hello = function(evt)
     if not emails[evt.data.sender] then
         emails[evt.data.sender] = {
             ["received"] = {},
-            ["sent"] = {},
-            ["last_pc"] = evt.sender
+            ["sent"] = {}
         }
-    else
-        emails[evt.data.sender]["last_pc"] = evt.sender
     end
     save_to_disk()
 end
 
 local handle_list_emails = function(evt)
+    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+        return shared.send_msg(events.stale_session, {}, evt.sender)
+    end
+
     print(os.time() .. " got list_emails from " .. evt.data.sender)
     local _emails = {}
     if emails[evt.data.sender] then
@@ -85,6 +87,10 @@ local handle_list_emails = function(evt)
 end
 
 local handle_delete_email = function(evt)
+    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+        return shared.send_msg(events.stale_session, {}, evt.sender)
+    end
+
     local email_id = evt.data.id
     print(os.time() .. " got delete_email id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
@@ -98,6 +104,10 @@ local handle_delete_email = function(evt)
 end
 
 local handle_mark_email_read = function(evt)
+    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+        return shared.send_msg(events.stale_session, {}, evt.sender)
+    end
+
     local email_id = evt.data.id
     print(os.time() .. " got mark_read id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
@@ -111,6 +121,10 @@ local handle_mark_email_read = function(evt)
 end
 
 local handle_mark_email_unread = function(evt)
+    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+        return shared.send_msg(events.stale_session, {}, evt.sender)
+    end
+
     local email_id = evt.data.id
     print(os.time() .. " got mark_unread id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
@@ -124,6 +138,10 @@ local handle_mark_email_unread = function(evt)
 end
 
 local handle_new_email = function(evt)
+    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+        return shared.send_msg(events.stale_session, {}, evt.sender)
+    end
+
     local er = {
         id = shared.random_id(10),
         to = evt.data.to,

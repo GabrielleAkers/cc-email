@@ -77,7 +77,7 @@ local get_email_address = function()
     end
 end
 
-local emails_updated
+local emails_updated, need_login
 
 local selected_email_id = nil
 
@@ -453,6 +453,10 @@ local gui = function()
             change_view(current_view)
             emails_updated = false
         end
+        if need_login then
+            change_view("login")
+            need_login = false
+        end
         evt = { os.pullEvent() }
         if evt[1] == "mouse_click" then
             ui.mousedown(evt[3], evt[4])
@@ -502,8 +506,14 @@ local handle_list_emails = function(evt)
     emails_updated = true
 end
 
+local handle_stale_session = function(evt)
+    auth.logout(auth.get_identity().user, auth.get_identity().token)
+    need_login = true
+end
+
 local event_handlers = {
     [events.list_emails] = handle_list_emails,
+    [events.stale_session] = handle_stale_session
 }
 
 local process_rednet = function()
