@@ -1,0 +1,6 @@
+{
+  utils = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/utils.lua",
+  deque = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/deque.lua",
+  shared = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/shared.lua",
+  server = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/server.lua",
+}

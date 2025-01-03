@@ -2,6 +2,8 @@ local shared = require("shared")
 local ui = require("ui")
 local events = shared.events
 
+shared.update_check(true)
+
 local tw, th = shared.destruct(shared, "tw", "th")
 
 local server_id = rednet.lookup(shared.protocol, shared.hostname)
@@ -25,9 +27,10 @@ local format_email_date = function(ts)
     local time_delta_seconds = (os.epoch("utc") - ts) / 1000
     local date
     if time_delta_seconds >= 86400 then
-        date = os.date("%D", (ts / 1000) + (shared.server_utc_hour_offset * 3600)) -- 04/27/33
+        date = os.date("%D", (ts / 1000) + (shared.server_utc_hour_offset * 3600))                                  -- 04/27/33
     else
-        date = os.date("%R", (ts / 1000) + (shared.server_utc_hour_offset * 3600)) .. " " .. shared.server_timezone -- 14:33 CDT
+        date = os.date("%R", (ts / 1000) + (shared.server_utc_hour_offset * 3600)) ..
+        " " .. shared.server_timezone                                                                               -- 14:33 CDT
     end
     return date
 end
@@ -40,7 +43,10 @@ local format_email_string = function(email)
     local sliced_from = string.sub(email.from, 1, from_size)
     local sliced_subject = string.sub(email.subject, 1, subject_size)
     local date = format_email_date(email.utc_timestamp)
-    return " " .. sliced_from .. string.rep(" ", from_size - string.len(sliced_from) + 2) .. sliced_subject .. string.rep(" ", subject_size - string.len(sliced_subject) + 2) .. date .. " "
+    return " " ..
+    sliced_from ..
+    string.rep(" ", from_size - string.len(sliced_from) + 2) ..
+    sliced_subject .. string.rep(" ", subject_size - string.len(sliced_subject) + 2) .. date .. " "
 end
 
 local unread_email_color = colors.lightGray
@@ -53,7 +59,7 @@ local emails_data = {}
 local build_emails_data = function()
     local sorted_email_ids = shared.get_sorted_keys(emails, function(a, b) return a.utc_timestamp > b.utc_timestamp end)
     for _, key in ipairs(sorted_email_ids) do
-        emails_data[#emails_data+1] = {
+        emails_data[#emails_data + 1] = {
             id = emails[key].id,
             btn_str = format_email_string(emails[key]),
             btn_color = emails[key].read and read_email_color or unread_email_color
@@ -71,7 +77,7 @@ local selected_email_id = nil
 
 local fetch_emails = function()
     emails = {}
-    shared.send_msg(events.list_emails, {sender=get_email_address()}, server_id)
+    shared.send_msg(events.list_emails, { sender = get_email_address() }, server_id)
     emails_updated = false
 end
 
@@ -81,8 +87,8 @@ local gui = function()
     term.clear()
     local needs_return = false
 
-    shared.send_msg(events.hello, {sender=get_email_address()}, server_id)
-    
+    shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+
     local change_view, current_view
 
     local back_btn = function()
@@ -146,7 +152,8 @@ local gui = function()
             "Read", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.mark_email_read, {sender=get_email_address(), id=selected_email_id}, server_id)
+                    shared.send_msg(events.mark_email_read, { sender = get_email_address(), id = selected_email_id },
+                        server_id)
                     change_view("read")
                 end
             end
@@ -160,7 +167,8 @@ local gui = function()
             "Mark\n Read", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.mark_email_read, {sender=get_email_address(), id=selected_email_id}, server_id)
+                    shared.send_msg(events.mark_email_read, { sender = get_email_address(), id = selected_email_id },
+                        server_id)
                     fetch_emails()
                 end
             end
@@ -174,7 +182,8 @@ local gui = function()
             "Mark\nUnread", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.mark_email_unread, {sender=get_email_address(), id=selected_email_id}, server_id)
+                    shared.send_msg(events.mark_email_unread, { sender = get_email_address(), id = selected_email_id },
+                        server_id)
                     fetch_emails()
                 end
             end
@@ -188,7 +197,8 @@ local gui = function()
             "Del", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.delete_email, {sender=get_email_address(), id=selected_email_id}, server_id)
+                    shared.send_msg(events.delete_email, { sender = get_email_address(), id = selected_email_id },
+                        server_id)
                     fetch_emails()
                 end
             end
@@ -196,7 +206,7 @@ local gui = function()
         ui.vertical_line(7, 4, th, colors.white)
         render_scrollbox()
     end
-    
+
     local compose_view = function()
         back_btn()
         ui.text(
@@ -239,16 +249,16 @@ local gui = function()
                 local sender = get_email_address()
                 local sub = ui.get_textbox_value("subject_textbox")
                 local body = ui.get_textbox_value("body_scrolltextbox")
-                shared.send_msg(events.new_email, {to = to, sender=sender, subject = sub, body = body}, server_id)
+                shared.send_msg(events.new_email, { to = to, sender = sender, subject = sub, body = body }, server_id)
             end
         )
         ui.vertical_line(18, 4, th, colors.white)
         ui.scrolltextbox(
             "body_scrolltextbox",
-            19, 5, tw - 2, th, colors.lightGray, "", colors.black, colors.lightBlue, colors.blue 
+            19, 5, tw - 2, th, colors.lightGray, "", colors.black, colors.lightBlue, colors.blue
         )
     end
-    
+
     local read_view = function()
         local page_offset_override = 1
         if not selected_email_id then
@@ -281,21 +291,21 @@ local gui = function()
                 local reply_idx = string.find(sub, "REPLY: ")
                 if reply_idx then
                     sub = string.sub(sub, reply_idx)
-                else 
+                else
                     sub = "REPLY: " .. sub
                 end
                 ui.set_textbox_value("subject_textbox", sub)
             end
         )
         ui.vertical_line(8, 4, th, colors.white)
-        
+
         ui.scrolltext(
             "read_email_scrolltext",
             10, 6, tw, th, colors.black, colors.white, email.body,
             colors.lightBlue, colors.blue,
             page_offset_override, function(offset) page_offset_override = offset end
         )
-        
+
         back_btn()
     end
 
@@ -372,7 +382,7 @@ local gui = function()
             change_view(current_view)
             emails_updated = false
         end
-        evt = {os.pullEvent()}
+        evt = { os.pullEvent() }
         if evt[1] == "mouse_click" then
             ui.mousedown(evt[3], evt[4])
         elseif evt[1] == "mouse_up" then
@@ -428,7 +438,7 @@ local event_handlers = {
 local process_rednet = function()
     local evt
     while true do
-        evt = {os.pullEvent()}
+        evt = { os.pullEvent() }
         if evt[1] == "rednet_message" then
             if evt[4] == shared.protocol then
                 local parsed = shared.parse_msg(evt)
@@ -450,4 +460,4 @@ while true do
     elseif client_state == client_states.exiting then
         return shared.clean_exit()
     end
-end 
+end

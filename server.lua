@@ -1,6 +1,8 @@
 local shared = require("shared")
 local events = shared.events
 
+shared.update_check(false)
+
 local lib_paths = {
     ["deque"] = "https://raw.githubusercontent.com/catwell/cw-lua/refs/heads/master/deque/deque.lua"
 }
@@ -16,7 +18,7 @@ local run_server = true
 local process_os_events = function()
     local evt
     while true do
-        evt = {os.pullEvent()}
+        evt = { os.pullEvent() }
         if evt[1] == "rednet_message" then
             if evt[4] == shared.protocol then
                 local parsed = shared.parse_msg(evt)
@@ -35,7 +37,7 @@ end
 local emails
 
 local save_to_disk = function()
-    local backups_dir = shell.resolve("./backups")
+    local backups_dir = shell.resolve("./persistence")
     if not fs.isDir(backups_dir) then
         fs.makeDir(backups_dir)
     end
@@ -45,7 +47,7 @@ local save_to_disk = function()
 end
 
 local read_from_disk = function()
-    local backups_dir = shell.resolve("./backups")
+    local backups_dir = shell.resolve("./persistence")
     if not fs.exists(backups_dir .. "/emails") then return {} end
     local email_file = fs.open(backups_dir .. "/emails", "r")
     local contents = email_file.readAll()
@@ -75,7 +77,7 @@ local handle_list_emails = function(evt)
     if emails[evt.data.sender] then
         for _, v in pairs(emails[evt.data.sender]["received"]) do
             if not v.deleted then
-                _emails[#_emails+1] = v
+                _emails[#_emails + 1] = v
             end
         end
     end
@@ -123,29 +125,29 @@ end
 
 local handle_new_email = function(evt)
     local er = {
-        id=shared.random_id(10),
-        to=evt.data.to,
-        from=evt.data.sender,
-        subject=evt.data.subject,
-        body=evt.data.body,
-        utc_timestamp=os.epoch("utc"),
-        read=false,
-        deleted=false
+        id = shared.random_id(10),
+        to = evt.data.to,
+        from = evt.data.sender,
+        subject = evt.data.subject,
+        body = evt.data.body,
+        utc_timestamp = os.epoch("utc"),
+        read = false,
+        deleted = false
     }
     local es = {
-        id=shared.random_id(10),
-        to=evt.data.to,
-        from=evt.data.sender,
-        subject=evt.data.subject,
-        body=evt.data.body,
-        utc_timestamp=os.epoch("utc"),
+        id = shared.random_id(10),
+        to = evt.data.to,
+        from = evt.data.sender,
+        subject = evt.data.subject,
+        body = evt.data.body,
+        utc_timestamp = os.epoch("utc"),
     }
     print(os.time() .. " got new mail from " .. evt.data.sender .. " to " .. evt.data.to)
     if emails[evt.data.sender] then
-        emails[evt.data.sender]["sent"][#emails[evt.data.sender]["sent"]+1] = es
+        emails[evt.data.sender]["sent"][#emails[evt.data.sender]["sent"] + 1] = es
     end
     if emails[evt.data.to] then
-        emails[evt.data.to]["received"][#emails[evt.data.to]["received"]+1] = er
+        emails[evt.data.to]["received"][#emails[evt.data.to]["received"] + 1] = er
     end
     save_to_disk()
 end
