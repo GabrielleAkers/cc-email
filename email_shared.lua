@@ -1,4 +1,4 @@
-local utils = require("utils")
+local utils = require("email_utils")
 
 local client_paste = "pastebin run LSdUFXvx client"
 local server_paste = "pastebin run LSdUFXvx server"

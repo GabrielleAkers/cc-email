@@ -1,5 +1,5 @@
-local shared = require("shared")
-local ui = require("ui")
+local shared = require("email_shared")
+local ui = require("email_ui")
 local events = shared.events
 
 shared.update_check(true)
@@ -27,10 +27,11 @@ local format_email_date = function(ts)
     local time_delta_seconds = (os.epoch("utc") - ts) / 1000
     local date
     if time_delta_seconds >= 86400 then
-        date = os.date("%D", (ts / 1000) + (shared.server_utc_hour_offset * 3600))                                  -- 04/27/33
+        date = os.date("%D", (ts / 1000) + (shared.server_utc_hour_offset * 3600)) -- 04/27/33
     else
         date = os.date("%R", (ts / 1000) + (shared.server_utc_hour_offset * 3600)) ..
-        " " .. shared.server_timezone                                                                               -- 14:33 CDT
+            " " ..
+            shared.server_timezone -- 14:33 CDT
     end
     return date
 end
@@ -44,9 +45,9 @@ local format_email_string = function(email)
     local sliced_subject = string.sub(email.subject, 1, subject_size)
     local date = format_email_date(email.utc_timestamp)
     return " " ..
-    sliced_from ..
-    string.rep(" ", from_size - string.len(sliced_from) + 2) ..
-    sliced_subject .. string.rep(" ", subject_size - string.len(sliced_subject) + 2) .. date .. " "
+        sliced_from ..
+        string.rep(" ", from_size - string.len(sliced_from) + 2) ..
+        sliced_subject .. string.rep(" ", subject_size - string.len(sliced_subject) + 2) .. date .. " "
 end
 
 local unread_email_color = colors.lightGray

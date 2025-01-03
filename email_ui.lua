@@ -1,4 +1,4 @@
-local utils = require("utils")
+local utils = require("email_utils")
 
 local clickables = {}
 
@@ -51,7 +51,8 @@ local textbox = function(
 )
     local render = function()
         if clickables[name] then
-            _render_box_with_txt(x0, y0, x1, y1, bg_color, tx, ty, txt_color, clickables[name].lvalue .. clickables[name].rvalue)
+            _render_box_with_txt(x0, y0, x1, y1, bg_color, tx, ty, txt_color,
+                clickables[name].lvalue .. clickables[name].rvalue)
         else
             _render_box_with_txt(x0, y0, x1, y1, bg_color, tx, ty, txt_color, txt)
         end
@@ -99,7 +100,7 @@ local button = function(
         render()
         onclick()
     end
-    
+
     clickables[name] = {
         render = render,
         on_mousedown = on_mousedown,
@@ -153,12 +154,13 @@ local scrollbox = function(
             for i = 0, els_per_page - 1 do
                 clickables[name .. "_list_btn_" .. i] = nil
             end
-            
+
             for i = 0, els_per_page - 1 do
                 if not data[page_offset + i] then break end
-    
+
                 local sep = i ~= 0 and 1 or 0
-                local ix0, iy0, ix1, iy1 = list_x0, y0 + i * el_height + i + sep * i, list_x1, y0 + el_height + i * el_height + i + sep * i
+                local ix0, iy0, ix1, iy1 = list_x0, y0 + i * el_height + i + sep * i, list_x1,
+                    y0 + el_height + i * el_height + i + sep * i
                 local btn_data_params = data[page_offset + i]
                 button(
                     name .. "_list_btn_" .. i,
@@ -171,7 +173,7 @@ local scrollbox = function(
                 )
             end
         end
-        
+
         button(
             name .. "_scroll_up",
             scroll_x + 1, y0, scroll_x + 2, scroll_y - 1,
@@ -230,7 +232,7 @@ local scrolltext = function(
             paintutils.drawFilledBox(list_x0, y0, list_x1, y1, bg_color)
             for i = 0, els_per_page - 1 do
                 if not paged_text[page_offset + i] then break end
-    
+
                 local ix0, iy0 = list_x0, y0 + (2 * i)
                 text(
                     ix0, iy0, paged_text[page_offset + i], txt_color, bg_color
@@ -373,7 +375,7 @@ end
 
 local set_focused_text = function(value)
     if not focused and not clickables[focused] then return end
-    
+
     clickables[focused].lvalue = value
     clickables[focused].render()
     set_focused_cursor_pos()
@@ -381,7 +383,7 @@ end
 
 local update_focused_text = function(value)
     if not focused and not clickables[focused] then return end
-    
+
     clickables[focused].lvalue = clickables[focused].lvalue .. value
     clickables[focused].render()
     set_focused_cursor_pos()
@@ -389,7 +391,7 @@ end
 
 local backspace_focused_text = function()
     if not focused and not clickables[focused] then return end
-    
+
     set_focused_text(string.sub(clickables[focused].lvalue, 1, string.len(clickables[focused].lvalue) - 1))
 end
 

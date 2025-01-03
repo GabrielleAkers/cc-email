@@ -1,4 +1,4 @@
-local shared = require("shared")
+local shared = require("email_shared")
 local events = shared.events
 
 shared.update_check(false)
