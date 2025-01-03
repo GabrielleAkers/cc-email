@@ -20,11 +20,11 @@ file.close()
 fs.delete(shell.resolve("./manifest"))
 local files = textutils.unserialise(manifest)
 
-local auth_dir = shell.resolve("./auth")
-if not fs.isDir(auth_dir) then
-    fs.makeDir(auth_dir)
+local dir = shell.resolve("./email")
+if not fs.isDir(dir) then
+    fs.makeDir(dir)
 end
-shell.setDir(auth_dir)
+shell.setDir(dir)
 for k, f in pairs(files) do
     if fs.exists(shell.resolve("./" .. k .. ".lua")) then
         fs.delete(shell.resolve("./" .. k .. ".lua"))
