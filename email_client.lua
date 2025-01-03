@@ -1,6 +1,7 @@
 local shared = require("email_shared")
 local ui = require("email_ui")
 local events = shared.events
+local auth = shared.auth
 
 shared.update_check(true)
 
@@ -11,7 +12,7 @@ local server_id = rednet.lookup(shared.protocol, shared.hostname)
 if server_id then
     print("Connected to server " .. shared.protocol .. "@" .. shared.hostname)
 else
-    printError("Cannot find server")
+    return error("cannot find server")
 end
 
 local client_states = {
@@ -69,7 +70,11 @@ local build_emails_data = function()
 end
 
 local get_email_address = function()
-    return os.getComputerID() .. "@tuah"
+    if auth.get_identity() then
+        return auth.get_identity()["email"]
+    else
+        return error("not authed")
+    end
 end
 
 local emails_updated
@@ -82,13 +87,17 @@ local fetch_emails = function()
     emails_updated = false
 end
 
-fetch_emails()
+if auth.get_identity() then
+    fetch_emails()
+end
 
 local gui = function()
     term.clear()
     local needs_return = false
 
-    shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+    if auth.get_identity() then
+        shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+    end
 
     local change_view, current_view
 
@@ -107,8 +116,71 @@ local gui = function()
         )
     end
 
+    local login_view = function()
+        ui.text(
+            tw / 2 - 9, 2,
+            "Login/Create Account", colors.white,
+            colors.black
+        )
+        ui.horizontal_line(0, tw, 4, colors.white)
+        ui.text(
+            tw / 2 - 4, 6,
+            "Username", colors.white,
+            colors.black
+        )
+        ui.textbox(
+            "username_textbox",
+            tw / 2 - 7, 8, tw / 2 + 7, 8,
+            colors.lightGray,
+            tw / 2 - 7, 8, "", colors.black,
+            false
+        )
+        ui.text(
+            tw / 2 - 4, 10,
+            "Password", colors.white,
+            colors.black
+        )
+        ui.textbox(
+            "password_textbox",
+            tw / 2 - 7, 12, tw / 2 + 7, 12,
+            colors.lightGray,
+            tw / 2 - 7, 12, "", colors.black,
+            false
+        )
+        local handle_bad_login = function()
+            term.setCursorPos(tw / 2 - 7, 18)
+            term.setTextColor(colors.white)
+            term.write("Wrong user/pass")
+        end
+        ui.button(
+            "login_btn",
+            tw / 2 - 7, 14,
+            tw / 2 + 7, 16,
+            colors.lightBlue, colors.blue,
+            tw / 2 - 3, 15,
+            "Login", colors.black,
+            function()
+                local i = auth.login(
+                    ui.get_textbox_value("username_textbox"),
+                    ui.get_textbox_value("password_textbox"),
+                    handle_bad_login
+                )
+                if i then
+                    shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+                    fetch_emails()
+                    change_view("inbox")
+                end
+            end
+        )
+    end
+
     local inbox_view = function()
         local page_offset_override = 1
+        ui.text(
+            1, 2,
+            get_email_address(), colors.green,
+            colors.black
+        )
         ui.text(
             tw / 2 - 3, 2,
             "Inbox", colors.white,
@@ -175,18 +247,14 @@ local gui = function()
             end
         )
         ui.button(
-            "mark_unread_email_btn",
+            "refresh_email_btn",
             btn_col_x0, btn_col_y0 + 9,
             btn_col_x1, btn_col_y1 + 9,
             colors.lightBlue, colors.blue,
             2, 15,
-            "Mark\nUnread", colors.black,
+            "Fetch", colors.black,
             function()
-                if selected_email_id then
-                    shared.send_msg(events.mark_email_unread, { sender = get_email_address(), id = selected_email_id },
-                        server_id)
-                    fetch_emails()
-                end
+                fetch_emails()
             end
         )
         ui.button(
@@ -310,7 +378,7 @@ local gui = function()
         back_btn()
     end
 
-    current_view = "inbox"
+    current_view = auth.get_identity() ~= nil and "inbox" or "login"
 
     change_view = function(viewname)
         paintutils.drawFilledBox(0, 0, tw, th, colors.black)
@@ -329,7 +397,9 @@ local gui = function()
             end
         )
         current_view = viewname
-        if viewname == "compose" then
+        if viewname == "login" then
+            login_view()
+        elseif viewname == "compose" then
             compose_view()
         elseif viewname == "read" then
             read_view()

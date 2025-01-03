@@ -1,4 +1,7 @@
+package.path = package.path .. ";/auth/?.lua"
+
 local utils = require("email_utils")
+local auth = require("auth_client")
 
 local client_paste = "pastebin run LSdUFXvx client"
 local server_paste = "pastebin run LSdUFXvx server"
@@ -146,5 +149,6 @@ return {
     pagify = utils.pagify,
     get_sorted_keys = utils.get_sorted_keys,
     first_to_upper = utils.first_to_upper,
-    random_id = utils.random_id
+    random_id = utils.random_id,
+    auth = auth
 }
