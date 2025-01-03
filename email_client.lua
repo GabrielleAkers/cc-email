@@ -83,7 +83,8 @@ local selected_email_id = nil
 
 local fetch_emails = function()
     emails = {}
-    shared.send_msg(events.list_emails, { sender = get_email_address() }, server_id)
+    shared.send_msg(events.list_emails,
+        { sender = get_email_address(), user = auth.get_identity().user, token = auth.get_identity().token }, server_id)
     emails_updated = false
 end
 
@@ -225,7 +226,14 @@ local gui = function()
             "Read", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.mark_email_read, { sender = get_email_address(), id = selected_email_id },
+                    shared.send_msg(events.mark_email_read,
+                        {
+                            sender = get_email_address(),
+                            id = selected_email_id,
+                            user = auth.get_identity().user,
+                            token =
+                                auth.get_identity().token
+                        },
                         server_id)
                     change_view("read")
                 end
@@ -240,7 +248,14 @@ local gui = function()
             "Mark\n Read", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.mark_email_read, { sender = get_email_address(), id = selected_email_id },
+                    shared.send_msg(events.mark_email_read,
+                        {
+                            sender = get_email_address(),
+                            id = selected_email_id,
+                            user = auth.get_identity().user,
+                            token =
+                                auth.get_identity().token
+                        },
                         server_id)
                     fetch_emails()
                 end
@@ -266,7 +281,14 @@ local gui = function()
             "Del", colors.black,
             function()
                 if selected_email_id then
-                    shared.send_msg(events.delete_email, { sender = get_email_address(), id = selected_email_id },
+                    shared.send_msg(events.delete_email,
+                        {
+                            sender = get_email_address(),
+                            id = selected_email_id,
+                            user = auth.get_identity().user,
+                            token =
+                                auth.get_identity().token
+                        },
                         server_id)
                     fetch_emails()
                 end
@@ -318,7 +340,9 @@ local gui = function()
                 local sender = get_email_address()
                 local sub = ui.get_textbox_value("subject_textbox")
                 local body = ui.get_textbox_value("body_scrolltextbox")
-                shared.send_msg(events.new_email, { to = to, sender = sender, subject = sub, body = body }, server_id)
+                shared.send_msg(events.new_email,
+                    { to = to, sender = sender, subject = sub, body = body, user = auth.get_identity().user, token = auth
+                    .get_identity().token }, server_id)
             end
         )
         ui.vertical_line(18, 4, th, colors.white)
