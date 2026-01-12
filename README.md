@@ -5,17 +5,15 @@ To get started you need at least 3 advanced computers on the same network (you c
 First setup the central auth server by running the following:
 
 ```
-> pastebin run SbSdvnZN server
-> auth_server
+> wget run https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/install.lua
+> auth/auth_server
 ```
 
 Then setup the email server with:
 
 ```
-> pastebin run SbSdvnZN client
-> cd ..
-> pastebin run LSdUFXvx server
-> email_server
+> wget run https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/install.lua
+> email/email_server
 ```
 
 Then set the chunk to forceload.
@@ -23,15 +21,8 @@ Then set the chunk to forceload.
 Now to setup any clients do:
 
 ```
-> pastebin run SbSdvnZN client
-> cd ..
-> pastebin run LSdUFXvx client
-```
-
-Then you from the email directory can run the email client with:
-
-```
-> email_client
+> wget run https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/install.lua
+> email/email_client
 ```
 
 and send/receive emails with ease.
