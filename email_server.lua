@@ -16,6 +16,10 @@ local evt_queue = deque.new()
 
 local run_server = true
 
+local log = function(msg)
+    print("[" .. os.time() .. "]" .. " " .. msg)
+end
+
 local process_os_events = function()
     local evt
     while true do
@@ -59,7 +63,7 @@ end
 emails = read_from_disk()
 
 local handle_hello = function(evt)
-    print(os.time() .. " got hello from " .. evt.data.sender)
+    log("got hello from " .. evt.data.sender)
     if not emails[evt.data.sender] then
         emails[evt.data.sender] = {
             ["received"] = {},
@@ -70,11 +74,11 @@ local handle_hello = function(evt)
 end
 
 local handle_list_emails = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
-    print(os.time() .. " got list_emails from " .. evt.data.sender)
+    log("got list_emails from " .. evt.data.sender)
     local _emails = {}
     if emails[evt.data.sender] then
         for _, v in pairs(emails[evt.data.sender]["received"]) do
@@ -87,12 +91,12 @@ local handle_list_emails = function(evt)
 end
 
 local handle_delete_email = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
     local email_id = evt.data.id
-    print(os.time() .. " got delete_email id " .. email_id .. " from " .. evt.data.sender)
+    log("got delete_email id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
         for _, v in pairs(emails[evt.data.sender]["received"]) do
             if v.id == email_id then
@@ -104,12 +108,12 @@ local handle_delete_email = function(evt)
 end
 
 local handle_mark_email_read = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
     local email_id = evt.data.id
-    print(os.time() .. " got mark_read id " .. email_id .. " from " .. evt.data.sender)
+    log("got mark_read id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
         for _, v in pairs(emails[evt.data.sender]["received"]) do
             if v.id == email_id then
@@ -121,12 +125,12 @@ local handle_mark_email_read = function(evt)
 end
 
 local handle_mark_email_unread = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
     local email_id = evt.data.id
-    print(os.time() .. " got mark_unread id " .. email_id .. " from " .. evt.data.sender)
+    log("got mark_unread id " .. email_id .. " from " .. evt.data.sender)
     if emails[evt.data.sender] then
         for _, v in pairs(emails[evt.data.sender]["received"]) do
             if v.id == email_id then
@@ -138,7 +142,7 @@ local handle_mark_email_unread = function(evt)
 end
 
 local handle_new_email = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() print("user doesnt exist in auth system") end) then
+    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
@@ -160,7 +164,7 @@ local handle_new_email = function(evt)
         body = evt.data.body,
         utc_timestamp = os.epoch("utc"),
     }
-    print(os.time() .. " got new mail from " .. evt.data.sender .. " to " .. evt.data.to)
+    log("got new mail from " .. evt.data.sender .. " to " .. evt.data.to)
     if emails[evt.data.sender] then
         emails[evt.data.sender]["sent"][#emails[evt.data.sender]["sent"] + 1] = es
     end
@@ -194,6 +198,8 @@ local process_events = function()
 end
 
 while run_server do
+    shared.clean_exit()
+    log("email server started...")
     rednet.host(shared.protocol, shared.hostname)
     parallel.waitForAny(
         process_os_events,
