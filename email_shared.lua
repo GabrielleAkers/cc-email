@@ -5,7 +5,7 @@ local auth = require("auth_client")
 
 local client_paste = "pastebin run LSdUFXvx client"
 local server_paste = "pastebin run LSdUFXvx server"
-local version_file = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/main/version"
+local version_file = "https://raw.githubusercontent.com/GabrielleAkers/cc-email/refs/heads/dev/version"
 local update_check = function(is_client)
     print("checking for updates")
     local version = http.get(version_file).readLine()
@@ -114,7 +114,8 @@ local events = {
     mark_email_read = "read|",
     mark_email_unread = "unread|",
     new_email = "newemail|",
-    stale_session = "stale_session|"
+    stale_session = "stale_session|",
+    list_users = "list_users|"
 }
 
 local events_valuemapped = {}

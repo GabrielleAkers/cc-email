@@ -125,7 +125,7 @@ local vertical_line = function(
     paintutils.drawFilledBox(x, y0, x, y1, color)
 end
 
-local scrollbox = function(
+local selectbox = function(
     name,
     x0, y0, x1, y1,
     bg_color, click_color, sep_color,
@@ -184,7 +184,6 @@ local scrollbox = function(
                 if page_offset <= 1 then return end
                 page_offset = utils.clamp(page_offset - els_per_page, 1, #data)
                 on_pageoffsetchange(page_offset)
-                onselect(nil)
                 render_scrollbox()
             end
         )
@@ -198,7 +197,6 @@ local scrollbox = function(
                 if page_offset >= #data then return end
                 page_offset = utils.clamp(page_offset + els_per_page, 1, #data)
                 on_pageoffsetchange(page_offset)
-                onselect(nil)
                 render_scrollbox()
             end
         )
@@ -452,7 +450,7 @@ return {
     text = text,
     button = button,
     textbox = textbox,
-    scrollbox = scrollbox,
+    selectbox = selectbox,
     scrolltext = scrolltext,
     scrolltextbox = scrolltextbox,
     mousedown = mousedown,
