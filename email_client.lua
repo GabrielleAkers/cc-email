@@ -71,7 +71,7 @@ end
 
 local get_user = function()
     if auth.get_identity() then
-        return auth.get_identity()["user"]
+        return auth.get_identity()["email"]
     else
         return error("not authed")
     end
@@ -336,7 +336,7 @@ local gui = function()
             colors.lightBlue, colors.blue,
             tw / 4 - 5, 16, "Send", colors.black,
             function()
-                local to = ui.get_textbox_value("to_textbox") .. "@tuah"
+                local to = ui.get_textbox_value("to_textbox")
                 local sender = get_user()
                 local sub = ui.get_textbox_value("subject_textbox")
                 local body = ui.get_textbox_value("body_scrolltextbox")
