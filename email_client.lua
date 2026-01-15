@@ -69,9 +69,9 @@ local build_emails_data = function()
     end
 end
 
-local get_email_address = function()
+local get_user = function()
     if auth.get_identity() then
-        return auth.get_identity()["email"]
+        return auth.get_identity()["user"]
     else
         return error("not authed")
     end
@@ -84,7 +84,7 @@ local selected_email_id = nil
 local fetch_emails = function()
     emails = {}
     shared.send_msg(events.list_emails,
-        { sender = get_email_address(), user = auth.get_identity().user, token = auth.get_identity().token }, server_id)
+        { sender = get_user(), user = auth.get_identity().user, token = auth.get_identity().token }, server_id)
     emails_updated = false
 end
 
@@ -97,7 +97,7 @@ local gui = function()
     local needs_return = false
 
     if auth.get_identity() then
-        shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+        shared.send_msg(events.hello, { sender = get_user() }, server_id)
     end
 
     local change_view, current_view
@@ -167,7 +167,7 @@ local gui = function()
                     handle_bad_login
                 )
                 if i then
-                    shared.send_msg(events.hello, { sender = get_email_address() }, server_id)
+                    shared.send_msg(events.hello, { sender = get_user() }, server_id)
                     fetch_emails()
                     change_view("inbox")
                 end
@@ -179,7 +179,7 @@ local gui = function()
         local page_offset_override = 1
         ui.text(
             1, 2,
-            get_email_address(), colors.green,
+            get_user(), colors.green,
             colors.black
         )
         ui.text(
@@ -228,7 +228,7 @@ local gui = function()
                 if selected_email_id then
                     shared.send_msg(events.mark_email_read,
                         {
-                            sender = get_email_address(),
+                            sender = get_user(),
                             id = selected_email_id,
                             user = auth.get_identity().user,
                             token =
@@ -250,7 +250,7 @@ local gui = function()
                 if selected_email_id then
                     shared.send_msg(events.mark_email_read,
                         {
-                            sender = get_email_address(),
+                            sender = get_user(),
                             id = selected_email_id,
                             user = auth.get_identity().user,
                             token =
@@ -283,7 +283,7 @@ local gui = function()
                 if selected_email_id then
                     shared.send_msg(events.delete_email,
                         {
-                            sender = get_email_address(),
+                            sender = get_user(),
                             id = selected_email_id,
                             user = auth.get_identity().user,
                             token =
@@ -337,7 +337,7 @@ local gui = function()
             tw / 4 - 5, 16, "Send", colors.black,
             function()
                 local to = ui.get_textbox_value("to_textbox") .. "@tuah"
-                local sender = get_email_address()
+                local sender = get_user()
                 local sub = ui.get_textbox_value("subject_textbox")
                 local body = ui.get_textbox_value("body_scrolltextbox")
                 shared.send_msg(events.new_email,
