@@ -128,8 +128,8 @@ function installer.downloadProject(github_path, repo, projectDir, branch, ignore
 end
 
 installer.downloadProject("https://raw.githubusercontent.com/GabrielleAkers/cc-email/", "GabrielleAkers/cc-email",
-    "email", "dev", nil)
+    "email", "main", nil)
 installer.downloadProject("https://raw.githubusercontent.com/GabrielleAkers/cc-auth/", "GabrielleAkers/cc-auth",
-    "auth", "dev", nil)
+    "auth", "main", nil)
 
 return installer
