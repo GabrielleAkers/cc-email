@@ -73,8 +73,12 @@ local handle_hello = function(evt)
     save_to_disk()
 end
 
+local session_ok = function(evt)
+    return auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end)
+end
+
 local handle_list_emails = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
+    if not session_ok(evt) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
@@ -91,7 +95,7 @@ local handle_list_emails = function(evt)
 end
 
 local handle_delete_email = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
+    if not session_ok(evt) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
@@ -108,7 +112,7 @@ local handle_delete_email = function(evt)
 end
 
 local handle_mark_email_read = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
+    if not session_ok(evt) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
@@ -125,7 +129,7 @@ local handle_mark_email_read = function(evt)
 end
 
 local handle_mark_email_unread = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
+    if not session_ok(evt) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
@@ -142,7 +146,7 @@ local handle_mark_email_unread = function(evt)
 end
 
 local handle_new_email = function(evt)
-    if not auth.check_token(evt.data.user, evt.data.token, function() log("user doesnt exist in auth system") end) then
+    if not session_ok(evt) then
         return shared.send_msg(events.stale_session, {}, evt.sender)
     end
 
