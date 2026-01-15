@@ -55,8 +55,10 @@ local unread_email_color = colors.lightGray
 local read_email_color = colors.gray
 
 local emails = {}
+local users = {}
 
 local emails_data = {}
+local users_data = {}
 
 local build_emails_data = function()
     local sorted_email_ids = shared.get_sorted_keys(emails, function(a, b) return a.utc_timestamp > b.utc_timestamp end)
@@ -69,6 +71,17 @@ local build_emails_data = function()
     end
 end
 
+local build_users_data = function()
+    table.sort(users, function(a, b) return a:upper() < b:upper() end)
+    for _, v in pairs(users) do
+        users_data[#users_data + 1] = {
+            id = v,
+            btn_str = v,
+            btn_color = colors.lightGray
+        }
+    end
+end
+
 local get_user = function()
     if auth.get_identity() then
         return auth.get_identity()["email"]
@@ -77,9 +90,10 @@ local get_user = function()
     end
 end
 
-local emails_updated, need_login
+local emails_updated, need_login, users_updated
 
 local selected_email_id = nil
+local selected_user = nil
 
 local fetch_emails = function()
     emails = {}
@@ -88,8 +102,16 @@ local fetch_emails = function()
     emails_updated = false
 end
 
+local fetch_users = function()
+    users = {}
+    shared.send_msg(events.list_users,
+        { sender = get_user(), user = auth.get_identity().user, token = auth.get_identity().token }, server_id)
+    users_updated = false
+end
+
 if auth.get_identity() then
     fetch_emails()
+    fetch_users()
 end
 
 local gui = function()
@@ -113,6 +135,20 @@ local gui = function()
             function()
                 change_view("inbox")
                 fetch_emails()
+            end
+        )
+    end
+
+    local back_to_compose_btn = function()
+        ui.button(
+            "back_btn",
+            1, 1,
+            3, 2,
+            colors.lime, colors.green,
+            2, 2,
+            "<", colors.black,
+            function()
+                change_view("compose")
             end
         )
     end
@@ -161,15 +197,19 @@ local gui = function()
             tw / 2 - 3, 15,
             "Login", colors.black,
             function()
-                local i = auth.login(
-                    ui.get_textbox_value("username_textbox"),
-                    ui.get_textbox_value("password_textbox"),
-                    handle_bad_login
-                )
-                if i then
-                    shared.send_msg(events.hello, { sender = get_user() }, server_id)
-                    fetch_emails()
-                    change_view("inbox")
+                local uname = ui.get_textbox_value("username_textbox")
+                local pword = ui.get_textbox_value("password_textbox")
+                if uname ~= "" and pword ~= "" then
+                    local i = auth.login(
+                        uname,
+                        pword,
+                        handle_bad_login
+                    )
+                    if i then
+                        shared.send_msg(events.hello, { sender = get_user() }, server_id)
+                        fetch_emails()
+                        change_view("inbox")
+                    end
                 end
             end
         )
@@ -189,9 +229,9 @@ local gui = function()
         )
         ui.horizontal_line(0, tw, 4, colors.white)
         local btn_col_x0, btn_col_x1, btn_col_y0, btn_col_y1 = 1, 6, 5, 7
-        local render_scrollbox = function()
-            ui.scrollbox(
-                "emails_scrollbox",
+        local render_selectbox = function()
+            ui.selectbox(
+                "emails_selectbox",
                 8, 5, tw, th,
                 colors.lightGray, colors.purple, colors.black,
                 colors.lightBlue, colors.blue,
@@ -295,7 +335,7 @@ local gui = function()
             end
         )
         ui.vertical_line(7, 4, th, colors.white)
-        render_scrollbox()
+        render_selectbox()
     end
 
     local compose_view = function()
@@ -313,10 +353,20 @@ local gui = function()
         )
         ui.textbox(
             "to_textbox",
-            tw / 4 - 10, 8, tw / 4 + 4, 8,
+            tw / 4 - 10, 8, tw / 4 + 1, 8,
             colors.lightGray,
-            tw / 4 - 10, 8, "", colors.black,
+            tw / 4 - 10, 8, selected_user or "", colors.black,
             false
+        )
+        ui.button(
+            "select_to_btn",
+            tw / 4 + 2, 8, tw / 4 + 4, 8,
+            colors.lightBlue, colors.blue,
+            tw / 4 + 3, 8, "T", colors.black,
+            function()
+                change_view("select_to")
+                fetch_users()
+            end
         )
         ui.text(
             tw / 4 - 7, 10,
@@ -336,7 +386,7 @@ local gui = function()
             colors.lightBlue, colors.blue,
             tw / 4 - 5, 16, "Send", colors.black,
             function()
-                local to = ui.get_textbox_value("to_textbox")
+                local to = ui.get_textbox_value("to_textbox") .. "@" .. shared.hostname
                 local sender = get_user()
                 local sub = ui.get_textbox_value("subject_textbox")
                 local body = ui.get_textbox_value("body_scrolltextbox")
@@ -349,6 +399,34 @@ local gui = function()
         ui.scrolltextbox(
             "body_scrolltextbox",
             19, 5, tw - 2, th, colors.lightGray, "", colors.black, colors.lightBlue, colors.blue
+        )
+    end
+
+    local select_to_view = function()
+        back_to_compose_btn()
+        local users_page_offset_override = 1
+        ui.text(
+            tw / 2 - 4, 2,
+            "Select User", colors.white,
+            colors.black
+        )
+        ui.horizontal_line(0, tw, 4, colors.white)
+
+        ui.selectbox(
+            "users_selectbox",
+            1, 5, tw, th,
+            colors.lightGray, colors.purple, colors.black,
+            colors.lightBlue, colors.blue,
+            colors.black,
+            users_data,
+            users_page_offset_override,
+            function(data_id)
+                selected_user = data_id
+                change_view("compose")
+            end,
+            function(offset)
+                users_page_offset_override = offset
+            end
         )
     end
 
@@ -416,13 +494,25 @@ local gui = function()
             tw - 1, 2,
             "X", colors.black,
             function()
-                client_state = client_states.exiting
-                needs_return = true
+                selected_email_id = nil
+                selected_user = nil
+                if viewname == "login" then
+                    client_state = client_states.exiting
+                    needs_return = true
+                else
+                    auth.logout(auth.get_identity().user, auth.get_identity().token)
+                    need_login = true
+                    ui.set_textbox_value("username_textbox", "")
+                    ui.set_textbox_value("password_textbox", "")
+                    viewname = "login"
+                end
             end
         )
         current_view = viewname
         if viewname == "login" then
             login_view()
+        elseif viewname == "select_to" then
+            select_to_view()
         elseif viewname == "compose" then
             compose_view()
         elseif viewname == "read" then
@@ -477,6 +567,10 @@ local gui = function()
             change_view(current_view)
             emails_updated = false
         end
+        if users_updated then
+            change_view(current_view)
+            users_updated = false
+        end
         if need_login then
             change_view("login")
             need_login = false
@@ -530,6 +624,15 @@ local handle_list_emails = function(evt)
     emails_updated = true
 end
 
+local handle_list_users = function(evt)
+    users = {}
+    users = evt.data
+
+    users_data = {}
+    build_users_data()
+    users_updated = true
+end
+
 local handle_stale_session = function(evt)
     auth.logout(auth.get_identity().user, auth.get_identity().token)
     need_login = true
@@ -537,7 +640,8 @@ end
 
 local event_handlers = {
     [events.list_emails] = handle_list_emails,
-    [events.stale_session] = handle_stale_session
+    [events.stale_session] = handle_stale_session,
+    [events.list_users] = handle_list_users
 }
 
 local process_rednet = function()
